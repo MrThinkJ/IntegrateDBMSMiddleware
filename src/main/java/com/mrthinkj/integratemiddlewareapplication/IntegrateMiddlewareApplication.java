@@ -31,7 +31,7 @@ import java.util.List;
         ),
         externalDocs = @ExternalDocumentation(
                 description = "Spring Boot Middleware Application Documentation",
-                url = "https://github.com/MrThinkJ/"
+                url = "https://github.com/MrThinkJ/IntegrateDBMSMiddleware"
         )
 )
 public class IntegrateMiddlewareApplication{
