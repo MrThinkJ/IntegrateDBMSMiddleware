@@ -6,6 +6,7 @@ import com.mrthinkj.integratemiddlewareapplication.model.SqlEmployee;
 import com.mrthinkj.integratemiddlewareapplication.service.MergeService;
 import com.mrthinkj.integratemiddlewareapplication.service.MongoEmployeeService;
 import com.mrthinkj.integratemiddlewareapplication.service.SqlEmployeeService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,9 @@ public class EmployeeController {
         this.mergeService = mergeService;
     }
 
+    @Operation(
+
+    )
     @GetMapping("/sql/employee")
     public ResponseEntity<List<SqlEmployee>> getAllSqlEmployee(){
         return ResponseEntity.ok(sqlEmployeeService.getAllEmployee());
