@@ -10,7 +10,6 @@ A middleware application that integrate data from 2 DBMS: SQLServer and MongoDB
 * Maven (https://maven.apache.org/download.cgi)
 ### Configuration
 * Configuration properties can be found in the application.properties file located in the src/main/resources directory.
-<\br>
 * Change `xxx` value with you value
 ### Running the application
 1. Clone the repository:
