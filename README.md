@@ -9,19 +9,18 @@ A middleware application that integrate data from 2 DBMS: SQLServer and MongoDB
 * Java (Version 20) (https://www.oracle.com/java/technologies/downloads/) 
 * Maven (https://maven.apache.org/download.cgi)
 ### Configuration
-* Configuration properties can be found in the application.properties file located in the src/main/resources directory.
-<br>
-* Change `xxx` value with you value
-### Running the application
-1. Clone the repository:
+* Clone the repository:
 ```
 git clone https://github.com/MrThinkJ/IntegrateDBMSMiddleware.git
 ```
-2. Navigate to the project directory:
+* Configuration properties can be found in the application.properties file located in the src/main/resources directory.
+* Change `xxx` value with you value
+### Running the application
+1. Navigate to the project directory:
 ```
 cd IntegrateMiddlewareAppicatlion
 ```
-3. Run the application:
+2. Run the application:
 ```
 mvn spring-boot:run
 ```
