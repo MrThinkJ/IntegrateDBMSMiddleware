@@ -96,7 +96,7 @@ public class MergeServiceImpl implements MergeService {
             return "Delete in Mongo";
         if (!sql)
             return "Delete in both DBMS";
-        return "Two DBMS dont contain these two values";
+        return "Two DBMS do not contain these two values";
     }
 
     @Override

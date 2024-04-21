@@ -83,16 +83,40 @@ public class EmployeeController {
         return ResponseEntity.ok(mergeService.mergeAllPerson());
     }
 
+    @Operation(
+            summary = "Delete from two DBMS API",
+            description = "Delete from two DBMS by employee's firstname and lastname"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Http Status 200 OK"
+    )
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteMergeEmployeeByFirstNameAndLastName(@RequestBody UserPayload deletePayload){
         return ResponseEntity.ok(mergeService.deleteFromTwoDBMS(deletePayload.getFirstName(), deletePayload.getLastName()));
     }
 
+    @Operation(
+            summary = "Get Update Info API",
+            description = "Get Update Info API is used to get info about which DBMS contains values or not"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Http Status 200 OK"
+    )
     @GetMapping("/update")
     public ResponseEntity<UpdateInfo> getUpdateInfoByFirstNameAndLastName(@RequestBody UserPayload userPayload){
         return ResponseEntity.ok(mergeService.getUpdateInfo(userPayload.getFirstName(), userPayload.getLastName()));
     }
 
+    @Operation(
+            summary = "Update two DBMS API",
+            description = "Update two DBMS API is used to update employee by firstname and lastname in both DBMS"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Http Status 200 OK"
+    )
     @PostMapping("/update/{typeId}/{isUpdated}")
     public ResponseEntity<MergePerson> updateMergeEmployeeByFirstNameAndLastName(@RequestBody MergePerson mergePerson,
                                                                                  @PathVariable Integer typeId,
@@ -100,6 +124,14 @@ public class EmployeeController {
         return new ResponseEntity<>(mergeService.updateFromTwoDBMS(typeId, isUpdated, mergePerson), HttpStatus.OK);
     }
 
+    @Operation(
+            summary = "Dashboard update Websocket API",
+            description = "Dashboard update Websocket API is used to update dashboard when it's called"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Http Status 200 OK"
+    )
     @GetMapping("/ws/update")
     public ResponseEntity<List<MergePerson>> getAllMergeEmployeeSocket(){
         List<MergePerson> mergePersonList = mergeService.mergeAllPerson();
