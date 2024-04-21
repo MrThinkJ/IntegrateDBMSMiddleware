@@ -3,6 +3,7 @@ package com.mrthinkj.integratemiddlewareapplication.service.impl;
 import com.mrthinkj.integratemiddlewareapplication.model.MergePerson;
 import com.mrthinkj.integratemiddlewareapplication.model.MongoEmployee;
 import com.mrthinkj.integratemiddlewareapplication.model.SqlEmployee;
+import com.mrthinkj.integratemiddlewareapplication.payload.UpdateInfo;
 import com.mrthinkj.integratemiddlewareapplication.repository.mongodao.MongoEmployeeRepository;
 import com.mrthinkj.integratemiddlewareapplication.repository.sqldao.SqlEmployeeRepository;
 import com.mrthinkj.integratemiddlewareapplication.service.MergeService;
@@ -85,4 +86,51 @@ public class MergeServiceImpl implements MergeService {
                 .updatedAt(mongoEmployee.getUpdatedAt())
                 .build();
     }
+
+    public String deleteFromTwoDBMS(String firstName, String lastName){
+        boolean sql = sqlEmployeeService.deleteEmployeeByFirstNameAndLastName(firstName, lastName);
+        boolean mongo = mongoEmployeeService.deleteEmployeeByFirstNameAndLastName(firstName, lastName);
+        if (sql && !mongo)
+            return "Delete in SQLServer";
+        if (!sql && mongo)
+            return "Delete in Mongo";
+        if (!sql)
+            return "Delete in both DBMS";
+        return "Two DBMS dont contain these two values";
+    }
+
+    @Override
+    public MergePerson updateFromTwoDBMS(Integer typeId, boolean isUpdated, MergePerson mergePerson) {
+        String firstName = mergePerson.getFirstName();
+        String lastName = mergePerson.getLastName();
+        UpdateInfo updateInfo = UpdateInfo.getInfoFromInteger(typeId);
+        if (updateInfo == UpdateInfo.All){
+            sqlEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
+            mongoEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
+            return mergePerson;
+        }
+        if (updateInfo == UpdateInfo.Mongo){
+            mongoEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
+            if (isUpdated)
+                sqlEmployeeService.createNewEmployee(mergePerson);
+            return mergePerson;
+        }
+        sqlEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
+        if (isUpdated)
+            mongoEmployeeService.createNewEmployee(mergePerson);
+        return mergePerson;
+    }
+
+    @Override
+    public UpdateInfo getUpdateInfo(String firstName, String lastName) {
+        boolean sql = sqlEmployeeService.getEmployeeByFirstNameAndLastname(firstName, lastName) != null;
+        boolean mongo = mongoEmployeeService.getEmployeeByFirstNameAndLastname(firstName, lastName) != null;
+        if (sql && mongo)
+            return UpdateInfo.All;
+        if (!sql)
+            return UpdateInfo.Mongo;
+        return UpdateInfo.SqlServer;
+    }
+
+
 }

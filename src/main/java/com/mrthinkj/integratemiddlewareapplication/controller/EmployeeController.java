@@ -3,21 +3,27 @@ package com.mrthinkj.integratemiddlewareapplication.controller;
 import com.mrthinkj.integratemiddlewareapplication.model.MergePerson;
 import com.mrthinkj.integratemiddlewareapplication.model.MongoEmployee;
 import com.mrthinkj.integratemiddlewareapplication.model.SqlEmployee;
+import com.mrthinkj.integratemiddlewareapplication.payload.UpdateInfo;
+import com.mrthinkj.integratemiddlewareapplication.payload.UserPayload;
 import com.mrthinkj.integratemiddlewareapplication.service.MergeService;
 import com.mrthinkj.integratemiddlewareapplication.service.MongoEmployeeService;
 import com.mrthinkj.integratemiddlewareapplication.service.SqlEmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 import java.util.List;
 
 @RestController
+@EnableWebSocket
 @RequestMapping("/api")
 @Tag(
         name = "REST APIs for interacting with 2 DBMS"
@@ -26,11 +32,16 @@ public class EmployeeController {
     SqlEmployeeService sqlEmployeeService;
     MongoEmployeeService mongoEmployeeService;
     MergeService mergeService;
+    SimpMessageSendingOperations messagingTemplate;
 
-    public EmployeeController(SqlEmployeeService sqlEmployeeService, MongoEmployeeService mongoEmployeeService, MergeService mergeService) {
+    public EmployeeController(SqlEmployeeService sqlEmployeeService,
+                              MongoEmployeeService mongoEmployeeService,
+                              MergeService mergeService,
+                              SimpMessageSendingOperations messagingTemplate) {
         this.sqlEmployeeService = sqlEmployeeService;
         this.mongoEmployeeService = mongoEmployeeService;
         this.mergeService = mergeService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Operation(
@@ -70,5 +81,29 @@ public class EmployeeController {
     @GetMapping("/merge/employee")
     public ResponseEntity<List<MergePerson>> getAllMergeEmployee(){
         return ResponseEntity.ok(mergeService.mergeAllPerson());
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteMergeEmployeeByFirstNameAndLastName(@RequestBody UserPayload deletePayload){
+        return ResponseEntity.ok(mergeService.deleteFromTwoDBMS(deletePayload.getFirstName(), deletePayload.getLastName()));
+    }
+
+    @GetMapping("/update")
+    public ResponseEntity<UpdateInfo> getUpdateInfoByFirstNameAndLastName(@RequestBody UserPayload userPayload){
+        return ResponseEntity.ok(mergeService.getUpdateInfo(userPayload.getFirstName(), userPayload.getLastName()));
+    }
+
+    @PostMapping("/update/{typeId}/{isUpdated}")
+    public ResponseEntity<MergePerson> updateMergeEmployeeByFirstNameAndLastName(@RequestBody MergePerson mergePerson,
+                                                                                 @PathVariable Integer typeId,
+                                                                                 @PathVariable boolean isUpdated){
+        return new ResponseEntity<>(mergeService.updateFromTwoDBMS(typeId, isUpdated, mergePerson), HttpStatus.OK);
+    }
+
+    @GetMapping("/ws/update")
+    public ResponseEntity<List<MergePerson>> getAllMergeEmployeeSocket(){
+        List<MergePerson> mergePersonList = mergeService.mergeAllPerson();
+        messagingTemplate.convertAndSend("/topic/public", mergePersonList);
+        return ResponseEntity.ok(mergePersonList);
     }
 }
