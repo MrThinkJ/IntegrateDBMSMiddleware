@@ -9,5 +9,6 @@ public interface MergeService {
     List<MergePerson> mergeAllPerson();
     String deleteFromTwoDBMS(String firstName, String lastName);
     MergePerson updateFromTwoDBMS(Integer typeId, boolean isUpdated, MergePerson mergePerson);
+    MergePerson createToTwoDBMS(MergePerson mergePerson);
     UpdateInfo getUpdateInfo(String firstName, String lastName);
 }

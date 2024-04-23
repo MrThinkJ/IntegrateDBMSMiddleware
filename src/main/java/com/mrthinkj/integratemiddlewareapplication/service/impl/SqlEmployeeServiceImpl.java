@@ -41,36 +41,25 @@ public class SqlEmployeeServiceImpl implements SqlEmployeeService {
 
     @Override
     public void createNewEmployee(MergePerson mergePerson) {
-        SqlEmployee sqlEmployee = SqlEmployee.builder()
-                .id(mergePerson.getId())
-                .firstName(mergePerson.getFirstName())
-                .lastName(mergePerson.getLastName())
-                .benefitPlans(mergePerson.getBenefitPlans())
-                .email(mergePerson.getEmail())
-                .address1(mergePerson.getAddress1())
-                .address2(mergePerson.getAddress2())
-                .ethnicity(mergePerson.getEthnicity())
-                .gender(mergePerson.isGender())
-                .maritalStatus(mergePerson.getMaritalStatus())
-                .middleInitial(mergePerson.getMiddleInitial())
-                .city(mergePerson.getCity())
-                .state(mergePerson.getState())
-                .zip(mergePerson.getZip())
-                .phoneNumber(mergePerson.getPhoneNumber())
-                .socialSecurityNumber(mergePerson.getSocialSecurityNumber())
-                .driversLicense(mergePerson.getDriversLicense())
-                .shareholderStatus(mergePerson.isShareholderStatus())
-                .build();
+        SqlEmployee sqlEmployee = buildSqlEmployee(mergePerson);
+        sqlEmployee.setId(mergePerson.getId());
+        sqlEmployee.setFirstName(mergePerson.getFirstName());
+        sqlEmployee.setLastName(mergePerson.getLastName());
         sqlEmployeeRepository.save(sqlEmployee);
     }
 
     @Override
     public void updateEmployeeByFirstNameAndLastName(String firstName, String lastName, MergePerson mergePerson) {
         SqlEmployee sqlEmployee = getEmployeeByFirstNameAndLastname(firstName, lastName);
-        SqlEmployee.builder()
-                .id(sqlEmployee.getId())
-                .firstName(sqlEmployee.getFirstName())
-                .lastName(sqlEmployee.getLastName())
+        SqlEmployee updatedEmployee = buildSqlEmployee(mergePerson);
+        updatedEmployee.setId(sqlEmployee.getId());
+        updatedEmployee.setFirstName(sqlEmployee.getFirstName());
+        updatedEmployee.setLastName(sqlEmployee.getLastName());
+        sqlEmployeeRepository.save(updatedEmployee);
+    }
+
+    private SqlEmployee buildSqlEmployee(MergePerson mergePerson){
+        return SqlEmployee.builder()
                 .benefitPlans(mergePerson.getBenefitPlans())
                 .email(mergePerson.getEmail())
                 .address1(mergePerson.getAddress1())

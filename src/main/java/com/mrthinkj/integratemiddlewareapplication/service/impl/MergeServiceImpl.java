@@ -4,17 +4,12 @@ import com.mrthinkj.integratemiddlewareapplication.model.MergePerson;
 import com.mrthinkj.integratemiddlewareapplication.model.MongoEmployee;
 import com.mrthinkj.integratemiddlewareapplication.model.SqlEmployee;
 import com.mrthinkj.integratemiddlewareapplication.payload.UpdateInfo;
-import com.mrthinkj.integratemiddlewareapplication.repository.mongodao.MongoEmployeeRepository;
-import com.mrthinkj.integratemiddlewareapplication.repository.sqldao.SqlEmployeeRepository;
 import com.mrthinkj.integratemiddlewareapplication.service.MergeService;
 import com.mrthinkj.integratemiddlewareapplication.service.MongoEmployeeService;
 import com.mrthinkj.integratemiddlewareapplication.service.SqlEmployeeService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class MergeServiceImpl implements MergeService {
@@ -118,6 +113,24 @@ public class MergeServiceImpl implements MergeService {
         sqlEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
         if (isUpdated)
             mongoEmployeeService.createNewEmployee(mergePerson);
+        return mergePerson;
+    }
+
+    @Override
+    public MergePerson createToTwoDBMS(MergePerson mergePerson) {
+        String firstName = mergePerson.getFirstName();
+        String lastName = mergePerson.getLastName();
+        boolean sql = sqlEmployeeService.getEmployeeByFirstNameAndLastname(firstName, lastName) != null;
+        boolean mongo = mongoEmployeeService.getEmployeeByFirstNameAndLastname(firstName, lastName) != null;
+        if (sql && mongo)
+            return mergePerson;
+        if (!sql){
+            sqlEmployeeService.createNewEmployee(mergePerson);
+            mongoEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
+            return mergePerson;
+        }
+        mongoEmployeeService.createNewEmployee(mergePerson);
+        sqlEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
         return mergePerson;
     }
 

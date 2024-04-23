@@ -45,11 +45,11 @@ public class EmployeeController {
     }
 
     @Operation(
-        summary = "Get All Employee in SQLServer DB REST API",
-        description = "Get All Employee in SQLServer DB REST API is used to retrieve data from DB which is set in application.properties"
+            summary = "Get All Employee in SQLServer DB REST API",
+            description = "Get All Employee in SQLServer DB REST API is used to retrieve data from DB which is set in application.properties"
     )
     @ApiResponse(
-        responseCode = "200",
+            responseCode = "200",
             description = "Http Status 200 OK"
     )
     @GetMapping("/sql/employee")
