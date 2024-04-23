@@ -124,6 +124,11 @@ public class EmployeeController {
         return new ResponseEntity<>(mergeService.updateFromTwoDBMS(typeId, isUpdated, mergePerson), HttpStatus.OK);
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<MergePerson> createEmployee(@RequestBody MergePerson mergePerson){
+        return new ResponseEntity<>(mergeService.createToTwoDBMS(mergePerson), HttpStatus.CREATED);
+    }
+
     @Operation(
             summary = "Dashboard update Websocket API",
             description = "Dashboard update Websocket API is used to update dashboard when it's called"
