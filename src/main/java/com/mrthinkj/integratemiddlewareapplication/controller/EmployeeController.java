@@ -121,12 +121,24 @@ public class EmployeeController {
     public ResponseEntity<MergePerson> updateMergeEmployeeByFirstNameAndLastName(@RequestBody MergePerson mergePerson,
                                                                                  @PathVariable Integer typeId,
                                                                                  @PathVariable boolean isUpdated){
-        return new ResponseEntity<>(mergeService.updateFromTwoDBMS(typeId, isUpdated, mergePerson), HttpStatus.OK);
+        MergePerson updatedPerson = mergeService.updateFromTwoDBMS(typeId, isUpdated, mergePerson);
+        getAllMergeEmployeeSocket();
+        return ResponseEntity.ok(updatedPerson);
     }
 
+    @Operation(
+            summary = "Create Employee On Two DBMS API",
+            description = "Create Employee On Two DBMS API used to create employee on both DBMS"
+    )
+    @ApiResponse(
+        responseCode = "201",
+            description = "HTTP Status 201 CREATED"
+    )
     @PostMapping("/create")
     public ResponseEntity<MergePerson> createEmployee(@RequestBody MergePerson mergePerson){
-        return new ResponseEntity<>(mergeService.createToTwoDBMS(mergePerson), HttpStatus.CREATED);
+        MergePerson newPerson = mergeService.createToTwoDBMS(mergePerson);
+        getAllMergeEmployeeSocket();
+        return new ResponseEntity<>(newPerson, HttpStatus.CREATED);
     }
 
     @Operation(
