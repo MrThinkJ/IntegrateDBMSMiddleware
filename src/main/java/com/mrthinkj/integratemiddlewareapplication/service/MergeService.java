@@ -1,6 +1,6 @@
 package com.mrthinkj.integratemiddlewareapplication.service;
 
-import com.mrthinkj.integratemiddlewareapplication.model.MergePerson;
+import com.mrthinkj.core.MergePerson;
 import com.mrthinkj.integratemiddlewareapplication.payload.UpdateInfo;
 
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 public interface MergeService {
     List<MergePerson> mergeAllPerson();
     String deleteFromTwoDBMS(String firstName, String lastName);
-    MergePerson updateFromTwoDBMS(Integer typeId, boolean isUpdated, MergePerson mergePerson);
-    MergePerson createToTwoDBMS(MergePerson mergePerson);
+    String updateFromTwoDBMS(Integer typeId, boolean isUpdated, MergePerson mergePerson);
+    String createToTwoDBMS(MergePerson mergePerson);
     UpdateInfo getUpdateInfo(String firstName, String lastName);
 }

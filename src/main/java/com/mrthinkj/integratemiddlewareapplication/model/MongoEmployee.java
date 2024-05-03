@@ -3,9 +3,8 @@ package com.mrthinkj.integratemiddlewareapplication.model;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.lang.annotation.Documented;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -24,7 +23,7 @@ public class MongoEmployee {
     private int paidLastYear;
     private int payRate;
     private int payRateId;
-    private Date createdAt;
-    private Date updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
 }

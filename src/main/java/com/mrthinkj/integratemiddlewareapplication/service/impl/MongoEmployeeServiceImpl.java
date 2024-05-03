@@ -1,11 +1,12 @@
 package com.mrthinkj.integratemiddlewareapplication.service.impl;
 
-import com.mrthinkj.integratemiddlewareapplication.model.MergePerson;
+import com.mrthinkj.core.MergePerson;
 import com.mrthinkj.integratemiddlewareapplication.model.MongoEmployee;
 import com.mrthinkj.integratemiddlewareapplication.repository.mongodao.MongoEmployeeRepository;
 import com.mrthinkj.integratemiddlewareapplication.service.MongoEmployeeService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -40,19 +41,11 @@ public class MongoEmployeeServiceImpl implements MongoEmployeeService {
     }
 
     @Override
-    public MongoEmployee createNewEmployee(MergePerson mergePerson) {
-        MongoEmployee mongoEmployee = MongoEmployee.builder()
-                .id(mergePerson.getId())
-                .firstName(mergePerson.getFirstName())
-                .lastName(mergePerson.getLastName())
-                .vacationDays(mergePerson.getVacationDays())
-                .payRate(mergePerson.getPayRate())
-                .paidLastYear(mergePerson.getPaidLastYear())
-                .payRateId(mergePerson.getPayRateId())
-                .paidToDate(mergePerson.getPaidToDate())
-                .createdAt(mergePerson.getCreatedAt())
-                .updatedAt(mergePerson.getUpdatedAt())
-                .build();
+    public MongoEmployee createNewEmployee(MongoEmployee mongoEmployee) {
+        if (mongoEmployeeRepository.findByFirstNameAndLastName(mongoEmployee.getFirstName(),mongoEmployee.getLastName()) != null)
+            return mongoEmployee;
+        mongoEmployee.setCreatedAt(LocalDateTime.now());
+        mongoEmployee.setUpdatedAt(LocalDateTime.now());
         return mongoEmployeeRepository.save(mongoEmployee);
     }
 

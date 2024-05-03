@@ -1,12 +1,13 @@
 package com.mrthinkj.integratemiddlewareapplication.service.impl;
 
-import com.mrthinkj.integratemiddlewareapplication.model.MergePerson;
+import com.mrthinkj.core.MergePerson;
 import com.mrthinkj.integratemiddlewareapplication.model.MongoEmployee;
 import com.mrthinkj.integratemiddlewareapplication.model.SqlEmployee;
 import com.mrthinkj.integratemiddlewareapplication.payload.UpdateInfo;
 import com.mrthinkj.integratemiddlewareapplication.service.MergeService;
 import com.mrthinkj.integratemiddlewareapplication.service.MongoEmployeeService;
 import com.mrthinkj.integratemiddlewareapplication.service.SqlEmployeeService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -41,7 +42,6 @@ public class MergeServiceImpl implements MergeService {
             }
             else{
                 mergePersons.add(mergeTwoEmployees(SqlEmployee.builder()
-                        .id(mongoEmployee.getId())
                         .firstName(mongoEmployee.getFirstName())
                         .lastName(mongoEmployee.getLastName()).build(),
                         mongoEmployee));
@@ -89,49 +89,55 @@ public class MergeServiceImpl implements MergeService {
             return "Delete in SQLServer";
         if (!sql && mongo)
             return "Delete in Mongo";
-        if (!sql)
+        if (sql)
             return "Delete in both DBMS";
         return "Two DBMS do not contain these two values";
     }
 
     @Override
-    public MergePerson updateFromTwoDBMS(Integer typeId, boolean isUpdated, MergePerson mergePerson) {
+    public String updateFromTwoDBMS(Integer typeId, boolean isCreated, MergePerson mergePerson) {
         String firstName = mergePerson.getFirstName();
         String lastName = mergePerson.getLastName();
         UpdateInfo updateInfo = UpdateInfo.getInfoFromInteger(typeId);
         if (updateInfo == UpdateInfo.All){
             sqlEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
             mongoEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
-            return mergePerson;
+            return "Update in both DBMS";
         }
         if (updateInfo == UpdateInfo.Mongo){
             mongoEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
-            if (isUpdated)
-                sqlEmployeeService.createNewEmployee(mergePerson);
-            return mergePerson;
+            if (isCreated)
+                sqlEmployeeService.createNewEmployee(mapToSQL(mergePerson));
+            return "Update in MongoDB and created in MSSQL";
         }
         sqlEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
-        if (isUpdated)
-            mongoEmployeeService.createNewEmployee(mergePerson);
-        return mergePerson;
+        if (isCreated)
+            mongoEmployeeService.createNewEmployee(mapToMongo(mergePerson));
+        return "Update in MSSQL and created in MongoDB";
     }
 
     @Override
-    public MergePerson createToTwoDBMS(MergePerson mergePerson) {
+    @Transactional(rollbackOn = Exception.class)
+    public String createToTwoDBMS(MergePerson mergePerson) {
         String firstName = mergePerson.getFirstName();
         String lastName = mergePerson.getLastName();
         boolean sql = sqlEmployeeService.getEmployeeByFirstNameAndLastname(firstName, lastName) != null;
         boolean mongo = mongoEmployeeService.getEmployeeByFirstNameAndLastname(firstName, lastName) != null;
         if (sql && mongo)
-            return mergePerson;
-        if (!sql){
-            sqlEmployeeService.createNewEmployee(mergePerson);
-            mongoEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
-            return mergePerson;
+            return "Already have this person in both DBMS";
+        if (!sql && !mongo){
+            sqlEmployeeService.createNewEmployee(mapToSQL(mergePerson));
+            mongoEmployeeService.createNewEmployee(mapToMongo(mergePerson));
+            return "Add this person to MSSQL and MongoDB";
         }
-        mongoEmployeeService.createNewEmployee(mergePerson);
+        if (!sql){
+            sqlEmployeeService.createNewEmployee(mapToSQL(mergePerson));
+            mongoEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
+            return "Add this person to MSSQL and update to MongoDB";
+        }
+        mongoEmployeeService.createNewEmployee(mapToMongo(mergePerson));
         sqlEmployeeService.updateEmployeeByFirstNameAndLastName(firstName, lastName, mergePerson);
-        return mergePerson;
+        return "Add this person to MongoDB and update to MSSQL";
     }
 
     @Override
@@ -145,5 +151,39 @@ public class MergeServiceImpl implements MergeService {
         return UpdateInfo.SqlServer;
     }
 
+    private MongoEmployee mapToMongo(MergePerson mergePerson){
+        return MongoEmployee.builder()
+                .firstName(mergePerson.getFirstName())
+                .lastName(mergePerson.getLastName())
+                .vacationDays(mergePerson.getVacationDays())
+                .payRate(mergePerson.getPayRate())
+                .paidLastYear(mergePerson.getPaidLastYear())
+                .payRateId(mergePerson.getPayRateId())
+                .paidToDate(mergePerson.getPaidToDate())
+                .createdAt(mergePerson.getCreatedAt())
+                .updatedAt(mergePerson.getUpdatedAt())
+                .build();
+    }
 
+    private SqlEmployee mapToSQL(MergePerson mergePerson){
+        return SqlEmployee.builder()
+                .firstName(mergePerson.getFirstName())
+                .lastName(mergePerson.getLastName())
+                .benefitPlans(mergePerson.getBenefitPlans())
+                .email(mergePerson.getEmail())
+                .address1(mergePerson.getAddress1())
+                .address2(mergePerson.getAddress2())
+                .ethnicity(mergePerson.getEthnicity())
+                .gender(mergePerson.isGender())
+                .maritalStatus(mergePerson.getMaritalStatus())
+                .middleInitial(mergePerson.getMiddleInitial())
+                .city(mergePerson.getCity())
+                .state(mergePerson.getState())
+                .zip(mergePerson.getZip())
+                .phoneNumber(mergePerson.getPhoneNumber())
+                .socialSecurityNumber(mergePerson.getSocialSecurityNumber())
+                .driversLicense(mergePerson.getDriversLicense())
+                .shareholderStatus(mergePerson.isShareholderStatus())
+                .build();
+    }
 }

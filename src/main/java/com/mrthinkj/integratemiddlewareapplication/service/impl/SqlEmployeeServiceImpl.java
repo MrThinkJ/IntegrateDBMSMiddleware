@@ -1,6 +1,6 @@
 package com.mrthinkj.integratemiddlewareapplication.service.impl;
 
-import com.mrthinkj.integratemiddlewareapplication.model.MergePerson;
+import com.mrthinkj.core.MergePerson;
 import com.mrthinkj.integratemiddlewareapplication.model.SqlEmployee;
 import com.mrthinkj.integratemiddlewareapplication.repository.sqldao.SqlEmployeeRepository;
 import com.mrthinkj.integratemiddlewareapplication.service.SqlEmployeeService;
@@ -40,11 +40,7 @@ public class SqlEmployeeServiceImpl implements SqlEmployeeService {
     }
 
     @Override
-    public void createNewEmployee(MergePerson mergePerson) {
-        SqlEmployee sqlEmployee = buildSqlEmployee(mergePerson);
-        sqlEmployee.setId(mergePerson.getId());
-        sqlEmployee.setFirstName(mergePerson.getFirstName());
-        sqlEmployee.setLastName(mergePerson.getLastName());
+    public void createNewEmployee(SqlEmployee sqlEmployee) {
         sqlEmployeeRepository.save(sqlEmployee);
     }
 

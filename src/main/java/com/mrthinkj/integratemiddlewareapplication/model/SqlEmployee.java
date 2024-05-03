@@ -12,9 +12,9 @@ import lombok.*;
 @Table(name = "Personal")
 public class SqlEmployee {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "Employee_ID")
-    private String id;
+    private int id;
     private String firstName;
     private String lastName;
     private String middleInitial;

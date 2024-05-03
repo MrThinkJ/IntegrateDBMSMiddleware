@@ -1,29 +1,30 @@
 package com.mrthinkj.integratemiddlewareapplication.controller;
 
-import com.mrthinkj.integratemiddlewareapplication.model.MergePerson;
+import com.mrthinkj.core.MergePerson;
 import com.mrthinkj.integratemiddlewareapplication.model.MongoEmployee;
 import com.mrthinkj.integratemiddlewareapplication.model.SqlEmployee;
 import com.mrthinkj.integratemiddlewareapplication.payload.UpdateInfo;
 import com.mrthinkj.integratemiddlewareapplication.payload.UserPayload;
 import com.mrthinkj.integratemiddlewareapplication.service.MergeService;
 import com.mrthinkj.integratemiddlewareapplication.service.MongoEmployeeService;
+import com.mrthinkj.integratemiddlewareapplication.service.SocketService;
 import com.mrthinkj.integratemiddlewareapplication.service.SqlEmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @EnableWebSocket
+@AllArgsConstructor
 @RequestMapping("/api")
 @Tag(
         name = "REST APIs for interacting with 2 DBMS"
@@ -32,17 +33,7 @@ public class EmployeeController {
     SqlEmployeeService sqlEmployeeService;
     MongoEmployeeService mongoEmployeeService;
     MergeService mergeService;
-    SimpMessageSendingOperations messagingTemplate;
-
-    public EmployeeController(SqlEmployeeService sqlEmployeeService,
-                              MongoEmployeeService mongoEmployeeService,
-                              MergeService mergeService,
-                              SimpMessageSendingOperations messagingTemplate) {
-        this.sqlEmployeeService = sqlEmployeeService;
-        this.mongoEmployeeService = mongoEmployeeService;
-        this.mergeService = mergeService;
-        this.messagingTemplate = messagingTemplate;
-    }
+    SocketService socketService;
 
     @Operation(
             summary = "Get All Employee in SQLServer DB REST API",
@@ -93,7 +84,9 @@ public class EmployeeController {
     )
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteMergeEmployeeByFirstNameAndLastName(@RequestBody UserPayload deletePayload){
-        return ResponseEntity.ok(mergeService.deleteFromTwoDBMS(deletePayload.getFirstName(), deletePayload.getLastName()));
+        String message = mergeService.deleteFromTwoDBMS(deletePayload.getFirstName(), deletePayload.getLastName());
+        getAllMergeEmployeeSocket();
+        return ResponseEntity.ok(message);
     }
 
     @Operation(
@@ -117,13 +110,13 @@ public class EmployeeController {
             responseCode = "200",
             description = "Http Status 200 OK"
     )
-    @PostMapping("/update/{typeId}/{isUpdated}")
-    public ResponseEntity<MergePerson> updateMergeEmployeeByFirstNameAndLastName(@RequestBody MergePerson mergePerson,
+    @PostMapping("/update/{typeId}/{isCreated}")
+    public ResponseEntity<String> updateMergeEmployeeByFirstNameAndLastName(@RequestBody MergePerson mergePerson,
                                                                                  @PathVariable Integer typeId,
-                                                                                 @PathVariable boolean isUpdated){
-        MergePerson updatedPerson = mergeService.updateFromTwoDBMS(typeId, isUpdated, mergePerson);
+                                                                                 @PathVariable boolean isCreated){
+        String message = mergeService.updateFromTwoDBMS(typeId, isCreated, mergePerson);
         getAllMergeEmployeeSocket();
-        return ResponseEntity.ok(updatedPerson);
+        return ResponseEntity.ok(message);
     }
 
     @Operation(
@@ -134,11 +127,13 @@ public class EmployeeController {
         responseCode = "201",
             description = "HTTP Status 201 CREATED"
     )
-    @PostMapping("/create")
-    public ResponseEntity<MergePerson> createEmployee(@RequestBody MergePerson mergePerson){
-        MergePerson newPerson = mergeService.createToTwoDBMS(mergePerson);
+    @PostMapping
+    public ResponseEntity<Map<String, String>> createEmployee(@RequestBody MergePerson mergePerson){
+        String message = mergeService.createToTwoDBMS(mergePerson);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", message);
         getAllMergeEmployeeSocket();
-        return new ResponseEntity<>(newPerson, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @Operation(
@@ -152,7 +147,7 @@ public class EmployeeController {
     @GetMapping("/ws/update")
     public ResponseEntity<List<MergePerson>> getAllMergeEmployeeSocket(){
         List<MergePerson> mergePersonList = mergeService.mergeAllPerson();
-        messagingTemplate.convertAndSend("/topic/public", mergePersonList);
+        socketService.sendToTopic("/topic/public", mergePersonList);
         return ResponseEntity.ok(mergePersonList);
     }
 }
